@@ -5,6 +5,8 @@ from util.s3_utils import S3Service
 from util.examples import common_examples, create_example_response
 from schemas import create_response
 from crud.student_record_crud import create_pdf_file, get_pdf_file, soft_delete_pdf_file
+
+from auth.oauth2 import get_current_user
 router = APIRouter()
 s3_service = S3Service()
 
@@ -16,8 +18,8 @@ s3_service = S3Service()
     },
 )
 def upload_pdf(
-    user_id: int,
     file: UploadFile,
+    user_id: int = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     # 파일 형식 검증
@@ -43,7 +45,7 @@ def upload_pdf(
         404: create_example_response("File not found", common_examples["error_404_file_not_found"]),
     },
 )
-def delete_pdf(file_id: int, db: Session = Depends(get_db)):
+def delete_pdf(file_id: int, user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
     # DB에서 파일 정보 가져오기
     student_record = get_pdf_file(db, file_id)
     if not student_record:

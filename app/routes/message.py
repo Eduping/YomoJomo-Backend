@@ -7,6 +7,7 @@ from crud.message_crud import create_message
 from langchainbot.bot import get_chatbot
 from database import get_db
 from util.examples import common_examples, create_example_response
+from auth.oauth2 import get_current_user
 
 router = APIRouter()
 @router.post(
@@ -15,7 +16,7 @@ router = APIRouter()
         200: create_example_response("Message sent successfully", common_examples["message_sent_success"]),
     },
 )
-def send_message(chatroom_id: int, message: MessageCreate, db: Session = Depends(get_db)):
+def send_message(chatroom_id: int, message: MessageCreate, user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
     chatbot = get_chatbot(chatroom_id, db)
 
     bot_response = chatbot.invoke(message.question)['response']
@@ -32,7 +33,7 @@ def send_message(chatroom_id: int, message: MessageCreate, db: Session = Depends
         404: create_example_response("No messages found in this chatroom", common_examples["messages_not_found"]),
     },
 )
-def get_messages(chatroom_id: int, db: Session = Depends(get_db)):
+def get_messages(chatroom_id: int, user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
     messages = db.query(MessageModel).filter(MessageModel.chatroom_id == chatroom_id).all()
     if not messages:
         raise HTTPException(status_code=404, detail="No messages found in this chatroom")

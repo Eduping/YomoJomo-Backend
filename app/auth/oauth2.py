@@ -5,6 +5,9 @@ from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 from config import Config
+from sqlalchemy.orm import Session
+from database import get_db
+from models import User as UserModel
 
 auth_scheme = HTTPBearer()
 
@@ -46,17 +49,22 @@ def verify_refresh_token(token: str) -> str:
         )
 
 # JWT 검증 함수
-def get_current_user(token: str = Depends(auth_scheme)) -> Optional[str]:
+def get_current_user(token: str = Depends(auth_scheme), db: Session = Depends(get_db)) -> int:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid token",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
+        # JWT 토큰 디코딩
         payload = jwt.decode(token.credentials, Config.JWT_SECRET, algorithms=[Config.JWT_ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-        return username
+        user = db.query(UserModel).filter(UserModel.username == username).first()
+        if user is None:
+            raise credentials_exception
+
+        return user.id
     except JWTError:
         raise credentials_exception

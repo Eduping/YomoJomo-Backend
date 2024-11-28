@@ -93,5 +93,5 @@ def refresh_token(refresh_token: str = Cookie(None)):
         401: create_example_response("Unauthorized access", common_examples["error_401_invalid_token"]),
     },
 )
-async def read_users_me(current_user: str = Depends(get_current_user)):
-    return create_response(200, True, "User retrieved successfully", {"username": current_user})
+async def read_users_me(user_id: int = Depends(get_current_user),):
+    return create_response(200, True, "User retrieved successfully", {"user_id": user_id})

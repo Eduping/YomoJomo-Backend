@@ -174,7 +174,30 @@ common_examples = {
             "deleted_at": None,
         },
     },
-
+    "chatroom_list_success": {
+        "status": 200,
+        "success": True,
+        "message": "Chatroom list retrieved successfully",
+        "data": {
+            "items": [
+                {
+                    "id": 1,
+                    "name": "Hello, how are you?",
+                    "last_message": "I am fine, thank you!",
+                    "last_message_time": "2024-11-29T10:00:00",
+                },
+                {
+                    "id": 2,
+                    "name": "Any plans for today?",
+                    "last_message": "Not really, just relaxing.",
+                    "last_message_time": "2024-11-29T09:45:00",
+                },
+            ],
+            "total": 2,
+            "page": 1,
+            "size": 10,
+        },
+    },
     # General Error Responses
     "error_400_invalid_request": {
         "status": 400,
