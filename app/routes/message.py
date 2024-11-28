@@ -11,7 +11,7 @@ from auth.oauth2 import get_current_user
 
 router = APIRouter()
 @router.post(
-    "/",
+    "",
     responses={
         200: create_example_response("Message sent successfully", common_examples["message_sent_success"]),
     },
@@ -27,7 +27,7 @@ def send_message(chatroom_id: int, message: MessageCreate, user_id: int = Depend
     return create_response(200, True, "Message sent successfully", data)
 
 @router.get(
-    "/chatroom/{chatroom_id}",
+    "",
     responses={
         200: create_example_response("Messages retrieved successfully", common_examples["messages_retrieved_success"]),
         404: create_example_response("No messages found in this chatroom", common_examples["messages_not_found"]),

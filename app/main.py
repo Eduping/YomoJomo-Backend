@@ -12,7 +12,7 @@ app.add_exception_handler(CustomException, custom_exception_handler)
 # 라우터 등록
 app.include_router(user.router, prefix="/users", tags=["Users"])
 app.include_router(chatroom.router, prefix="/chatrooms", tags=["ChatRooms"])
-app.include_router(message.router, prefix="/messages", tags=["Messages"])
+app.include_router(message.router, prefix="/chatrooms/{chatroom_id}/messages", tags=["Messages"])
 app.include_router(student_record.router, prefix="/student-records", tags=["Student Records"])
 @app.get("/")
 def read_root():

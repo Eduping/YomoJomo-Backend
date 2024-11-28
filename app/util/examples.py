@@ -160,6 +160,36 @@ common_examples = {
         "message": "No messages found in this chatroom",
         "data": None,
     },
+    "student_records_success": {
+    "status": 200,
+    "success": True,
+    "message": "Student records retrieved successfully",
+    "data": {
+        "items": [
+            {
+                "id": 1,
+                "file_name": "record1.pdf",
+                "file_url": "https://your-s3-bucket.s3.amazonaws.com/record1.pdf",
+                "created_at": "2024-11-29T12:34:56",
+            },
+            {
+                "id": 2,
+                "file_name": "record2.pdf",
+                "file_url": "https://your-s3-bucket.s3.amazonaws.com/record2.pdf",
+                "created_at": "2024-11-28T15:20:30",
+            },
+        ],
+        "total": 2,
+        "page": 1,
+        "size": 10,
+        },
+    },
+    "error_404_no_records": {
+    "status": 404,
+    "success": False,
+    "message": "No records found",
+    "data": None,
+    },
     # Chatroom API Responses
     "chatroom_created_success": {
         "status": 200,
@@ -182,13 +212,11 @@ common_examples = {
             "items": [
                 {
                     "id": 1,
-                    "name": "Hello, how are you?",
                     "last_message": "I am fine, thank you!",
                     "last_message_time": "2024-11-29T10:00:00",
                 },
                 {
                     "id": 2,
-                    "name": "Any plans for today?",
                     "last_message": "Not really, just relaxing.",
                     "last_message_time": "2024-11-29T09:45:00",
                 },

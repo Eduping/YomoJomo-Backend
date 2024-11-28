@@ -10,7 +10,7 @@ from fastapi import Query
 from auth.oauth2 import get_current_user
 router = APIRouter()
 @router.post(
-    "/",
+    "",
     responses={
         200: create_example_response(
             "Chatroom created successfully", common_examples["chatroom_created_success"]
@@ -26,7 +26,7 @@ def create_new_chatroom(chatroom: ChatRoomCreate, user_id: int = Depends(get_cur
     return create_response(200, True, "Chatroom created successfully", chat_room_data)
 
 @router.get(
-    "/",
+    "",
     responses={
         200: create_example_response(
             "Chatroom list retrieved successfully", common_examples["chatroom_list_success"]
