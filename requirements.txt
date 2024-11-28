@@ -1,0 +1,16 @@
+alembic==1.14.0
+bcrypt==4.2.1
+cryptography==43.0.3
+fastapi==0.115.5
+langchain==0.3.8
+langchain-community==0.3.8
+openai==1.55.2
+pydantic==2.10.2
+pydantic-settings==2.6.1
+PyJWT==2.10.0
+PyMySQL==1.1.1
+python-dotenv==1.0.1
+python-jose==3.3.0
+python-multipart==0.0.17
+SQLAlchemy==2.0.35
+uvicorn==0.32.1
