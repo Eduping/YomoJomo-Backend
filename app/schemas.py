@@ -1,7 +1,29 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Any
+from fastapi.responses import JSONResponse
 
+class APIResponse(BaseModel):
+    success: bool
+    message: Optional[str] = None
+    data: Optional[Any] = None
+
+def create_response(
+    status,
+    success: bool,
+    message: Optional[str] = None,
+    data: Optional[Any] = None
+
+) -> JSONResponse:
+    return JSONResponse(
+        content={
+            "status": status,
+            "success": success,
+            "message": message,
+            "data": data,
+        },
+        status_code=status,
+    )
 class MessageCreate(BaseModel):
     question: str
 

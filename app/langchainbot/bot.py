@@ -9,7 +9,7 @@ def load_chat_history_from_db(chatroom_id: int, db: Session) -> list:
     """
     DB에서 chatroom_id에 해당하는 대화 기록을 가져와 LangChain 메시지 형식의 리스트로 변환.
     """
-    messages = db.query(Message).filter(Message.chatroom_id == chatroom_id).order_by(Message.timestamp).all()
+    messages = db.query(Message).filter(Message.chatroom_id == chatroom_id).order_by(Message.created_at).all()
     return [
         HumanMessage(content=msg.question) if msg.question else AIMessage(content=msg.answer)
         for msg in messages
