@@ -9,12 +9,20 @@ from sqlalchemy.orm import Session
 from models import User as UserModel
 from schemas import UserCreate, create_response
 from crud.user_crud import create_user
+
+from util.examples import common_examples, create_example_response
 import bcrypt
 
 from config import Config
 
 router = APIRouter()
-@router.post("/signup")
+@router.post(
+    "/signup",
+    responses={
+        200: create_example_response("Signup successful", common_examples["signup_success"]),
+        400: create_example_response("User already registered", common_examples["error_400"]),
+    },
+)
 def create_new_user(user: UserCreate, db: Session = Depends(get_db)):
     # 이메일 중복 확인
     db_user = db.query(UserModel).filter(UserModel.username == user.username).first()
@@ -26,7 +34,13 @@ def create_new_user(user: UserCreate, db: Session = Depends(get_db)):
     new_user = create_user(db, user)
     return create_response(200, True, "User created successfully", {"id": new_user.id, "username": new_user.username})
 # 로그인 API
-@router.post("/login")
+@router.post(
+    "/login",
+    responses={
+        200: create_example_response("Login successful", common_examples["login_success"]),
+        400: create_example_response("Invalid credentials", common_examples["error_400"]),
+    },
+)
 def login(request: UserCreate, response: Response, db: Session = Depends(get_db)):
     # 사용자 확인
     db_user = db.query(UserModel).filter(UserModel.username == request.username).first()
@@ -52,7 +66,13 @@ def login(request: UserCreate, response: Response, db: Session = Depends(get_db)
     data = {"access_token": access_token, "token_type": "bearer"}
     return create_response(200, True, "Login successful", data)
 # Access Token 갱신 API
-@router.post("/refresh")
+@router.post(
+    "/refresh",
+    responses={
+        200: create_example_response("Token refreshed successfully", common_examples["refresh_success"]),
+        401: create_example_response("Refresh token missing or invalid", common_examples["error_401_missing_refresh"]),
+    },
+)
 def refresh_token(refresh_token: str = Cookie(None)):
     if not refresh_token:
         raise HTTPException(
@@ -66,6 +86,12 @@ def refresh_token(refresh_token: str = Cookie(None)):
 
     data = {"access_token": new_access_token, "token_type": "bearer"}
     return create_response(200, True, "Token refreshed successfully", data)
-@router.get("/users/me")
+@router.get(
+    "/users/me",
+    responses={
+        200: create_example_response("User retrieved successfully", common_examples["user_retrieved"]),
+        401: create_example_response("Unauthorized access", common_examples["error_401_invalid_token"]),
+    },
+)
 async def read_users_me(current_user: str = Depends(get_current_user)):
     return create_response(200, True, "User retrieved successfully", {"username": current_user})

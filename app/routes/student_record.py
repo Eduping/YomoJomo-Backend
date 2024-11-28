@@ -2,12 +2,19 @@ from fastapi import APIRouter, Depends, UploadFile, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
 from util.s3_utils import S3Service
+from util.examples import common_examples, create_example_response
 from schemas import create_response
 from crud.student_record_crud import create_pdf_file, get_pdf_file, soft_delete_pdf_file
 router = APIRouter()
 s3_service = S3Service()
 
-@router.post("/upload")
+@router.post(
+    "/upload",
+    responses={
+        200: create_example_response("File uploaded successfully", common_examples["upload_success"]),
+        400: create_example_response("Invalid file format", common_examples["error_400_invalid_format"]),
+    },
+)
 def upload_pdf(
     user_id: int,
     file: UploadFile,
@@ -28,7 +35,14 @@ def upload_pdf(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/delete", response_model=dict)
+@router.delete(
+    "/delete",
+    responses={
+        200: create_example_response("File deleted successfully", common_examples["delete_success"]),
+        400: create_example_response("File already deleted", common_examples["error_400_file_deleted"]),
+        404: create_example_response("File not found", common_examples["error_404_file_not_found"]),
+    },
+)
 def delete_pdf(file_id: int, db: Session = Depends(get_db)):
     # DB에서 파일 정보 가져오기
     student_record = get_pdf_file(db, file_id)

@@ -3,13 +3,8 @@ from datetime import datetime
 from typing import List, Optional, Any
 from fastapi.responses import JSONResponse
 
-class APIResponse(BaseModel):
-    success: bool
-    message: Optional[str] = None
-    data: Optional[Any] = None
-
 def create_response(
-    status,
+    status: int,
     success: bool,
     message: Optional[str] = None,
     data: Optional[Any] = None
