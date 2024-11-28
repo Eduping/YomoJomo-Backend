@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from schemas import ChatRoomCreate, create_response
 from fastapi.encoders import jsonable_encoder
-from crud import create_chatroom
+from crud.chatroom_crud import create_chatroom
 from database import get_db
 router = APIRouter()
 @router.post("/")

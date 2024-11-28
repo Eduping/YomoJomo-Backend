@@ -3,7 +3,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from schemas import MessageCreate, create_response
 from models import Message as MessageModel
-from crud import create_message
+from crud.message_crud import create_message
 from langchainbot.bot import get_chatbot
 from database import get_db
 

@@ -8,7 +8,7 @@ from database import get_db
 from sqlalchemy.orm import Session
 from models import User as UserModel
 from schemas import UserCreate, create_response
-from crud import create_user
+from crud.user_crud import create_user
 import bcrypt
 
 from config import Config
@@ -19,12 +19,12 @@ def create_new_user(user: UserCreate, db: Session = Depends(get_db)):
     # 이메일 중복 확인
     db_user = db.query(UserModel).filter(UserModel.username == user.username).first()
     if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="User already registered")
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(user.password.encode("utf-8"), salt)
     user.password = hashed_password
     new_user = create_user(db, user)
-    return create_response(200, True, "User created successfully", new_user)
+    return create_response(200, True, "User created successfully", {"id": new_user.id, "username": new_user.username})
 # 로그인 API
 @router.post("/login")
 def login(request: UserCreate, response: Response, db: Session = Depends(get_db)):

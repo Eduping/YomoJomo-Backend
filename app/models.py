@@ -14,9 +14,6 @@ class User(Base, BaseModelMixin):
     password = Column(String(255))
     chatrooms = relationship("ChatRoom", back_populates="owner")
 
-    model_config = {
-        "from_attributes": True,
-    }
 class ChatRoom(Base, BaseModelMixin):
     __tablename__ = "chatrooms"
     id = Column(Integer, primary_key=True, index=True)
@@ -25,9 +22,6 @@ class ChatRoom(Base, BaseModelMixin):
     messages = relationship("Message", back_populates="chatroom")
     owner = relationship("User", back_populates="chatrooms")
 
-    model_config = {
-        "from_attributes": True,
-    }
 class Message(Base, BaseModelMixin):
     __tablename__ = "messages"
     id = Column(Integer, primary_key=True, index=True)
@@ -35,7 +29,9 @@ class Message(Base, BaseModelMixin):
     answer = Column(Text)
     chatroom_id = Column(Integer, ForeignKey("chatrooms.id"))
     chatroom = relationship("ChatRoom", back_populates="messages")
-
-    model_config = {
-        "from_attributes": True,
-    }
+class StudentRecord(Base, BaseModelMixin):
+    __tablename__ = "student_records"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    file_name = Column(String(255), nullable=False)
+    file_url = Column(String(2092), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
