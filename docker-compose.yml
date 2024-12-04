@@ -39,6 +39,55 @@ services:
       - db_data:/var/lib/mysql
     networks:
       - app_network
+  redis:
+    image: redis:6.0
+    container_name: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: celery
+    volumes:
+      - ./app:/app
+    command: >
+      sh -c "
+      celery -A celery_config.celery_app worker --loglevel=info --concurrency=10"
+    env_file:
+      - .env
+    networks:
+      - app_network
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flower
+    volumes:
+      - ./app:/app
+    command: >
+      celery -A celery_config.celery_app flower --port=5555 --broker=$CELERY_BROKER_URL
+    env_file:
+      - .env
+    ports:
+      - "5555:5555"
+    networks:
+      - app_network
+    depends_on:
+      redis:
+        condition: service_healthy
 networks:
   app_network:
     driver: bridge
