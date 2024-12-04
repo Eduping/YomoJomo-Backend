@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, UploadFile, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
 from util.s3_utils import S3Service
+from util.ocr_utiles import split_and_ocr_pdf_with_celery, parse_ocr_text
 from util.examples import common_examples, create_example_response
 from schemas import create_response
 from crud.student_record_crud import create_pdf_file, get_pdf_file, soft_delete_pdf_file
@@ -9,21 +10,21 @@ from fastapi import Query
 from auth.oauth2 import get_current_user
 from models import StudentRecord
 from fastapi.encoders import jsonable_encoder
-
+from celery.result import AsyncResult
+from celery_config import celery_app
 router = APIRouter()
 s3_service = S3Service()
 
 @router.post(
     "",
     responses={
-        200: create_example_response("File uploaded successfully", common_examples["upload_success"]),
+        200: create_example_response("File upload started successfully", common_examples["upload_success"]),
         400: create_example_response("Invalid file format", common_examples["error_400_invalid_format"]),
     },
 )
 def upload_pdf(
     file: UploadFile,
     user_id: int = Depends(get_current_user),
-    db: Session = Depends(get_db)
 ):
     # 파일 형식 검증
     if file.content_type != "application/pdf":
@@ -32,13 +33,51 @@ def upload_pdf(
             detail="Only PDF files are allowed.",
         )
 
-    # S3에 파일 업로드
+    # 3. OCR 처리
     try:
-        file_url = s3_service.upload_file(file.file, file.filename)
-        new_file = create_pdf_file(db, file.filename, file_url, user_id)
-        return create_response(200, True, "File uploaded successfully", {"file_url": file_url})
+        file_bytes = file.file.read()
+        task = split_and_ocr_pdf_with_celery.apply_async(args=[file_bytes, file.filename, user_id])
+        task_id = task.id
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"OCR processing failed {str(e)}")
+
+    return create_response(200, True, "File uploaded successfully", {"task_id": task_id})
+
+@router.get(
+    "/tasks/{task_id}/status",
+    responses={
+        200: create_example_response(
+            "Task status retrieved successfully",
+            common_examples["task_status_success"],
+        ),
+        404: create_example_response(
+            "Task not found",
+            common_examples["task_not_found"],
+        ),
+    },
+)
+def get_task_status(task_id: str):
+    """
+    작업 상태를 반환하는 API
+    """
+    task = AsyncResult(task_id, app=celery_app)
+
+    if task.state == "PENDING":
+        # 작업이 큐에 추가되었지만 아직 시작되지 않은 경우
+        response = {"status": "PENDING", "progress": None}
+    elif task.state == "PROGRESS":
+        # 작업 진행 중
+        response = {"status": "PROGRESS", "progress": task.info}
+    elif task.state == "SUCCESS":
+        # 작업 완료
+        response = {"status": "SUCCESS", "result": task.result}
+    elif task.state == "FAILURE":
+        # 작업 실패
+        response = {"status": "FAILURE", "error": str(task.info)}
+    else:
+        response = {"status": task.state}
+
+    return create_response(200, True, "Task status retrieved successfully", response)
 
 @router.delete(
     "",

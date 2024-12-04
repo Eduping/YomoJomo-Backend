@@ -3,11 +3,11 @@ from sqlalchemy import func
 from models import StudentRecord
 from typing import Optional
 
-def create_pdf_file(db: Session, file_name: str, file_url: str, user_id: int) -> StudentRecord:
+def create_pdf_file(db: Session, file_name: str, file_url: str, user_id: int, ocr_data: dict) -> StudentRecord:
     """
     PDF 파일 정보를 생성하고 DB에 저장.
     """
-    new_file = StudentRecord(file_name=file_name, file_url=file_url, user_id=user_id)
+    new_file = StudentRecord(file_name=file_name, file_url=file_url, user_id=user_id, text_data=ocr_data)
     db.add(new_file)
     db.commit()
     db.refresh(new_file)

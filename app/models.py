@@ -2,6 +2,7 @@ from sqlalchemy import Integer, String, ForeignKey, Text, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
 from sqlalchemy import Column, DateTime, func
+from sqlalchemy.dialects.mysql import JSON
 
 class BaseModelMixin:
     created_at = Column(DateTime, default=func.now(), nullable=False)
@@ -35,3 +36,4 @@ class StudentRecord(Base, BaseModelMixin):
     file_name = Column(String(255), nullable=False)
     file_url = Column(String(2092), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    text_data = Column(JSON)

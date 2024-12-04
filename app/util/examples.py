@@ -34,9 +34,9 @@ common_examples = {
     "upload_success": {
         "status": 200,
         "success": True,
-        "message": "File uploaded successfully",
+        "message": "File upload started successfully",
         "data": {
-            "file_url": "https://your-s3-bucket.s3.amazonaws.com/path/to/file.pdf",
+            "task_id": "celery-task-id",
         },
     },
     "delete_success": {
@@ -233,4 +233,47 @@ common_examples = {
         "message": "Invalid request",
         "data": None,
     },
+
+    # Task Status API Responses
+    "task_status_pending": {
+        "status": 200,
+        "success": True,
+        "message": "Task status retrieved successfully",
+        "data": {
+            "status": "PENDING",
+            "progress": None
+        }
+    },
+    "task_status_progress": {
+        "status": 200,
+        "success": True,
+        "message": "Task status retrieved successfully",
+        "data": {
+            "status": "PROGRESS",
+        }
+    },
+    "task_status_success": {
+        "status": 200,
+        "success": True,
+        "message": "Task status retrieved successfully",
+        "data": {
+            "status": "SUCCESS",
+            "result": "OCR completed successfully"
+        }
+    },
+    "task_status_failure": {
+        "status": 200,
+        "success": False,
+        "message": "Task status retrieved successfully",
+        "data": {
+            "status": "FAILURE",
+            "error": "Task execution failed due to an error"
+        }
+    },
+    "task_not_found": {
+        "status": 404,
+        "success": False,
+        "message": "Task not found.",
+        "data": None
+    }
 }

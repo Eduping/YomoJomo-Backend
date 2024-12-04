@@ -25,3 +25,8 @@ class Config:
     AWS_REGION = os.getenv("AWS_REGION")
     AWS_S3_BUCKET = os.getenv("AWS_S3_BUCKET")
     CLOUDFRONT_URL = os.getenv("CLOUDFRONT_URL")
+
+    OCR_SECRET_KEY = os.getenv("OCR_SECRET_KEY")
+    OCR_API_INVOKE_URL = os.getenv("OCR_API_INVOKE_URL")
+
+    CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
