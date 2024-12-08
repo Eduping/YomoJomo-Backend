@@ -12,6 +12,7 @@ from models import StudentRecord
 from fastapi.encoders import jsonable_encoder
 from celery.result import AsyncResult
 from celery_config import celery_app
+import json
 router = APIRouter()
 s3_service = S3Service()
 
@@ -176,4 +177,53 @@ def get_student_records(
             "page": page,
             "size": size,
         },
+    )
+
+@router.get(
+    "/students/{student_id}",
+    responses={
+        200: {"description": "Student record retrieved successfully"},
+        404: {"description": "Record not found"}
+    },
+)
+def get_student_record(
+    student_id: int,
+    user_id: int = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    record = (
+        db.query(StudentRecord)
+        .filter(
+            StudentRecord.user_id == user_id,
+            StudentRecord.id == student_id,
+            StudentRecord.deleted_at.is_(None),
+        )
+        .first()
+    )
+
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Record not found."
+        )
+
+    text_data = record.text_data
+    # text_data가 이미 dict라면 그대로 사용
+    # 만약 text_data가 문자열 JSON이라면 로드 필요
+    if isinstance(text_data, str):
+        try:
+            text_data = json.loads(text_data)
+        except json.JSONDecodeError:
+            text_data = None
+
+    data = {
+        "id": record.id,
+        "file_name": record.file_name,
+        "text_data": text_data,
+    }
+
+    return create_response(
+        200,
+        True,
+        "Student record retrieved successfully",
+        jsonable_encoder(data),
     )
