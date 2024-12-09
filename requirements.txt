@@ -4,7 +4,7 @@ cryptography==43.0.3
 fastapi==0.115.5
 langchain==0.3.8
 langchain-community==0.3.8
-openai==1.55.2
+openai==1.57.0
 pydantic==2.10.2
 pydantic-settings==2.6.1
 PyJWT==2.10.0

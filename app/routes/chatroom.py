@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from schemas import ChatRoomCreate, create_response
 from fastapi.encoders import jsonable_encoder
 from crud.chatroom_crud import create_chatroom
@@ -47,36 +48,50 @@ def get_chatrooms(
     """
     offset = (page - 1) * size
 
-    # 채팅방과 최신 메시지를 가져오기
-    chatrooms = (
-        db.query(ChatRoom, Message)
-        .join(Message, ChatRoom.id == Message.chatroom_id)
+    # 최신 메시지를 기준으로 각 채팅방의 정보를 가져오기
+    subquery = (
+        db.query(
+            Message.chatroom_id,
+            func.max(Message.created_at).label("latest_message_time")
+        )
+        .group_by(Message.chatroom_id)
+        .subquery()
+    )
+
+    # 채팅방과 최신 메시지 결합
+    chatrooms_query = (
+        db.query(
+            ChatRoom.id,
+            ChatRoom.name,
+            Message.answer.label("last_message"),
+            subquery.c.latest_message_time.label("last_message_time"),
+        )
+        .join(subquery, ChatRoom.id == subquery.c.chatroom_id)
+        .join(Message, (Message.chatroom_id == ChatRoom.id) & (Message.created_at == subquery.c.latest_message_time))
         .filter(ChatRoom.user_id == user_id)
-        .order_by(Message.created_at.desc())
-        .distinct(ChatRoom.id)
+        .order_by(subquery.c.latest_message_time.desc())
         .offset(offset)
         .limit(size)
-        .all()
     )
-    for chatroom, message in chatrooms:
-        print(chatroom, message)
+
+    chatrooms = chatrooms_query.all()
     # 데이터 변환
     data = [
         {
             "id": chatroom.id,
-            "last_message": message.answer if message else None,
-            "last_message_time": message.created_at if message else None,
+            "name": chatroom.name,
+            "last_message": chatroom.last_message,
+            "last_message_time": chatroom.last_message_time,
         }
-        for chatroom, message in chatrooms
+        for chatroom in chatrooms
     ]
 
     # 전체 개수 계산
-    total_count = (
-        db.query(ChatRoom)
-        .filter(ChatRoom.user_id == user_id)
-        .count()
-    )
+    total_count = db.query(ChatRoom).filter(ChatRoom.user_id == user_id).count()
 
+    if not chatrooms:
+        return create_response(200, False, "No chatrooms found", {"items": [], "total": 0, "page": page, "size": size})
+    
     return create_response(
         200,
         True,
