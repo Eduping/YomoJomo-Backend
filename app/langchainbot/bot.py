@@ -4,6 +4,8 @@ from langchain.memory import ConversationBufferMemory
 from langchain_core.messages import HumanMessage, AIMessage
 from sqlalchemy.orm import Session
 from models import Message
+from langchain.callbacks.manager import CallbackManager
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 def load_chat_history_from_db(chatroom_id: int, db: Session) -> list:
     """
@@ -22,7 +24,11 @@ def get_chatbot(chatroom_id: int, db: Session) -> ConversationChain:
     이전 대화를 DB에서 로드하고 ConversationBufferMemory에 연동.
     """
     # ChatGPT 모델 설정
-    chat_model = ChatOpenAI(temperature=0.7, model="gpt-3.5-turbo")
+    chat_model = ChatOpenAI(temperature=0.7, 
+                            model="gpt-4o",
+                            streaming=True,
+                            callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
+                            verbose=True)
 
     # DB에서 대화 기록 로드
     chat_history = load_chat_history_from_db(chatroom_id, db)

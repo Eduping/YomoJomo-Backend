@@ -107,36 +107,37 @@ def send_message(
 
     if category == "performance":
         filtered_text_data = {
-            "교과학습발달상황": text_data.get("수상경력", ""),
-            "수상경력": text_data.get("인적사항", ""),
+            "교과학습발달상황": text_data.get("교과학습발달상황", ""),
         }
     elif category == "summary":
         filtered_text_data = {
-            "독서활동상황": text_data.get("수상경력", ""),
-            "창의적 체험활동상황": text_data.get("인적사항", ""),
-            "행동특성 및 종합의견": text_data.get("인적사항", ""),
-            "자격증 및 인증 취득상황": text_data.get("인적사항", ""),
+            "독서활동상황": text_data.get("독서활동상황", ""),
+            "창의적 체험활동상황": text_data.get("창의적 체험활동상황", ""),
+            "행동특성 및 종합의견": text_data.get("행동특성 및 종합의견", ""),
+            "자격증 및 인증 취득상황": text_data.get("자격증 및 인증 취득상황", ""),
         }
     elif category == "counseling":
         filtered_text_data = {
-            "인적사항": text_data.get("수상경력", ""),
-            "교과학습발달상황": text_data.get("인적사항", ""),
+            "인적사항": text_data.get("인적사항", ""),
+            "교과학습발달상황": text_data.get("교과학습발달상황", ""),
             "행동특성 및 종합의견": text_data.get("인적사항", ""),
         }
     elif category == "recommendation": 
         filtered_text_data = {
-            "진로희망사항": text_data.get("수상경력", ""),
-            "교과학습발달상황": text_data.get("인적사항", ""),
-            "독서활동상황": text_data.get("인적사항", ""),
-            "수상경력": text_data.get("인적사항", ""),
+            "진로희망사항": text_data.get("진로희망사항", ""),
+            "교과학습발달상황": text_data.get("교과학습발달상황", ""),
+            "독서활동상황": text_data.get("독서활동상황", ""),
+            "수상경력": text_data.get("수상경력", ""),
         }
 
-    filtered_text_data = json.dumps(text_data, ensure_ascii=False)
-    print(f"최종 전달 context : {filtered_text_data}")
+    result = json.dumps(filtered_text_data, ensure_ascii=False)
+    if len(result) > 17000:
+        result = result[:17000] 
+    print(f"최종 전달 context : {result}")
 
     chatbot = get_chatbot(chatroom_id, db)
 
-    bot_response = chatbot.invoke(filtered_text_data)['response']
+    bot_response = chatbot.invoke(result)['response']
 
     create_message(db, question=message.question, answer=bot_response, chatroom_id=chatroom_id)
 
